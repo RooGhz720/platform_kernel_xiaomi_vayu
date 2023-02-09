@@ -39,7 +39,7 @@ function finerr() {
 }
 # Compile plox
 function compile() {
- make sweet_user_defconfig O=out
+ make vayu_defconfig O=out
     make -j$(nproc --all) O=out \
                       ARCH=arm64 \
                       CC=clang \
