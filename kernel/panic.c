@@ -28,6 +28,9 @@
 #include <linux/console.h>
 #include <linux/bug.h>
 #include <linux/ratelimit.h>
+#define CREATE_TRACE_POINTS
+#include <trace/events/exception.h>
+#include <soc/qcom/minidump.h>
 #include <linux/sysfs.h>
 
 #define PANIC_TIMER_STEP 100
