@@ -1,9 +1,11 @@
-#![allow(dead_code, unused_mut, unused_variables, unused_imports)]
+use anyhow::Result;
 
+#[cfg(unix)]
+use anyhow::ensure;
+#[cfg(unix)]
 use std::os::unix::process::CommandExt;
-use anyhow::{Result, ensure};
 
-const KERNEL_SU_OPTION: u32 = 0xDEADBEEF;
+pub const KERNEL_SU_OPTION: u32 = 0xDEAD_BEEF;
 
 const CMD_GRANT_ROOT: u64 = 0;
 // const CMD_BECOME_MANAGER: u64 = 1;
@@ -13,51 +15,54 @@ const CMD_GET_VERSION: u64 = 2;
 // const CMD_GET_ALLOW_LIST: u64 = 5;
 // const CMD_GET_DENY_LIST: u64 = 6;
 const CMD_REPORT_EVENT: u64 = 7;
+pub const CMD_SET_SEPOLICY: u64 = 8;
 
 const EVENT_POST_FS_DATA: u64 = 1;
 const EVENT_BOOT_COMPLETED: u64 = 2;
 
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn grant_root() -> Result<()> {
     let mut result: u32 = 0;
     unsafe {
+        #[allow(clippy::cast_possible_wrap)]
         libc::prctl(
-            KERNEL_SU_OPTION as i32,
+            KERNEL_SU_OPTION as i32, // supposed to overflow
             CMD_GRANT_ROOT,
             0,
             0,
-            &mut result as *mut _ as *mut libc::c_void,
+            std::ptr::addr_of_mut!(result).cast::<libc::c_void>(),
         );
     }
 
     ensure!(result == KERNEL_SU_OPTION, "grant root failed");
-    std::process::Command::new("/system/bin/sh").exec();
-    Ok(())
+    Err(std::process::Command::new("sh").exec().into())
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn grant_root() -> Result<()> {
     unimplemented!("grant_root is only available on android");
 }
 
 pub fn get_version() -> i32 {
     let mut result: i32 = 0;
-    #[cfg(target_os = "android")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     unsafe {
+        #[allow(clippy::cast_possible_wrap)]
         libc::prctl(
-            KERNEL_SU_OPTION as i32,
+            KERNEL_SU_OPTION as i32, // supposed to overflow
             CMD_GET_VERSION,
-            &mut result as *mut _ as *mut libc::c_void,
+            std::ptr::addr_of_mut!(result).cast::<libc::c_void>(),
         );
     }
     result
 }
 
 fn report_event(event: u64) {
-    #[cfg(target_os = "android")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     unsafe {
+        #[allow(clippy::cast_possible_wrap)]
         libc::prctl(
-            KERNEL_SU_OPTION as i32,
+            KERNEL_SU_OPTION as i32, // supposed to overflow
             CMD_REPORT_EVENT,
             event,
         );

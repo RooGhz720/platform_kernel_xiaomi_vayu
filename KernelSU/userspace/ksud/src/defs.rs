@@ -1,7 +1,11 @@
 use const_format::concatcp;
 
-pub const DAEMON_PATH: &str = "/data/adb/ksud";
-pub const WORKING_DIR: &str = "/data/adb/ksu/";
+pub const ADB_DIR: &str = "/data/adb/";
+
+pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
+
+pub const WORKING_DIR: &str = concatcp!(ADB_DIR, "ksu/");
+pub const BINARY_DIR: &str = concatcp!(WORKING_DIR, "bin/");
 
 pub const MODULE_DIR: &str = concatcp!(WORKING_DIR, "modules/");
 pub const MODULE_IMG: &str = concatcp!(WORKING_DIR, "modules.img");
@@ -15,3 +19,6 @@ pub const MODULE_UPDATE_TMP_DIR: &str = concatcp!(WORKING_DIR, "modules_update/"
 pub const DISABLE_FILE_NAME: &str = "disable";
 pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
+
+pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
+pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
